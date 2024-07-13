@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AsyncServerMAUI.MainPage">
+    
+    <StackLayout Padding="20">
+        <Entry x:Name="IpEntry" Placeholder="IP Address" />
+        <Entry x:Name="PortEntry" Placeholder="Port" Keyboard="Numeric" />
+        <Button Text="Start server" Clicked="OnStartServerClicked" />
+        <Entry x:Name="MessageEntry" Placeholder="Message" />
+        <Button Text="Send" Clicked="OnSendClicked" />
+        <Editor x:Name="LogEditor" HeightRequest="300" IsReadOnly="True" />
+    </StackLayout>
+    
+</ContentPage>
