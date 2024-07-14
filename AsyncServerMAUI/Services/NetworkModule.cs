@@ -1,15 +1,18 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
-public class NetworkModule
+public class ServerNetworkModule
 {
     private Action<string> logAction;
     private Action<string> messageReceivedAction;
     private TcpListener tcpListener;
     private TcpClient tcpClient;
+    private NetworkStream stream;
 
-    public NetworkModule(Action<string> logAction, Action<string> messageReceivedAction)
+    public ServerNetworkModule(Action<string> logAction, Action<string> messageReceivedAction)
     {
         this.logAction = logAction;
         this.messageReceivedAction = messageReceivedAction;
@@ -30,16 +33,28 @@ public class NetworkModule
                     tcpClient = await tcpListener.AcceptTcpClientAsync();
                     logAction($"Client connected: {tcpClient.Client.RemoteEndPoint}");
 
-                    var stream = tcpClient.GetStream();
+                    stream = tcpClient.GetStream();
                     byte[] receiveBuffer = new byte[1024];
-                    int bytesRead = await stream.ReadAsync(receiveBuffer, 0, receiveBuffer.Length);
+                    int bytesRead;
 
-                    if (bytesRead > 0)
+                    while ((bytesRead = await stream.ReadAsync(receiveBuffer, 0, receiveBuffer.Length)) > 0)
                     {
                         string receivedMessage = Encoding.UTF8.GetString(receiveBuffer, 0, bytesRead);
                         logAction($"Received from client: {receivedMessage}");
                         messageReceivedAction(receivedMessage);
+
+                        if (receivedMessage.Trim().Equals("Bye", StringComparison.OrdinalIgnoreCase))
+                        {
+                            logAction("Connection closed by client.");
+                            break;
+                        }
+
+                        byte[] responseBuffer = Encoding.UTF8.GetBytes("Hello, client!");
+                        await stream.WriteAsync(responseBuffer, 0, responseBuffer.Length);
+                        logAction($"Sent response to client.");
                     }
+
+                    tcpClient.Close();
                 }
             }
             catch (Exception ex)
@@ -48,7 +63,6 @@ public class NetworkModule
             }
         });
     }
-
 
     public async void SendMessage(string message)
     {
@@ -61,7 +75,6 @@ public class NetworkModule
         try
         {
             byte[] buffer = Encoding.UTF8.GetBytes(message);
-            var stream = tcpClient.GetStream();
             await stream.WriteAsync(buffer, 0, buffer.Length);
             logAction($"Sent {buffer.Length} bytes to client.");
         }
