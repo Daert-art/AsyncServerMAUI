@@ -1,9 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using System;
-using System.Collections.Generic;
-using System.Net.Sockets;
-
-namespace AsyncServerMAUI
+﻿namespace AsyncServerMAUI
 {
     public partial class MainPage : ContentPage
     {
@@ -19,9 +14,8 @@ namespace AsyncServerMAUI
 
         private void OnStartServerClicked(object sender, EventArgs e)
         {
-            string ipAddress = IpEntry.Text;
-            int port = int.Parse(PortEntry.Text);
-            networkModule.StartServer(ipAddress, port);
+            string message = MessageEntry.Text;
+            networkModule.SendMessage(message);
         }
 
         private void OnSendClicked(object sender, EventArgs e)
